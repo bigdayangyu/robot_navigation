@@ -1,18 +1,19 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import ode_solver
 from random import random
 
-dt = 1
 
+dt = 0.1
 show_animation = True
 # Vehicle parameters
-LENGTH = 4.5  # [m]
-WIDTH = 2.0  # [m]
-BACKTOWHEEL = 1.0  # [m]
-WHEEL_LEN = 0.3  # [m]
-WHEEL_WIDTH = 0.2  # [m]
-TREAD = 0.7  # [m]
-WB = 2.5  # [m]
+LENGTH = 4.5 /2 # [m]
+WIDTH = 2.0/2  # [m]
+BACKTOWHEEL = 1.0/2  # [m]
+WHEEL_LEN = 0.3/2  # [m]
+WHEEL_WIDTH = 0.2/2  # [m]
+TREAD = 0.7/2  # [m]
+WB = 2.5/2  # [m]
 
 
 def plot_vehicle(x, y, theta, steer = 0.0, cabcolor="-r", truckcolor="-k"):  # pragma: no cover
@@ -73,8 +74,8 @@ def plot_vehicle(x, y, theta, steer = 0.0, cabcolor="-r", truckcolor="-k"):  # p
     plt.gcf().canvas.mpl_connect('key_release_event',
             lambda event: [exit(0) if event.key == 'escape' else None])
 
-    plt.xlim(0, 20)
-    plt.ylim(0, 20)
+    plt.xlim(-5, 5)
+    plt.ylim(-16,4)
 
     plt.pause(dt)
 
@@ -85,15 +86,55 @@ def transformation_matrix(x, y, theta):
         [0, 0, 1]
     ])
 
+
+def plot_ellipse(xCenter, cBest, cMin, etheta):  # pragma: no cover
+
+    a = np.sqrt(cBest ** 2 - cMin ** 2) / 2.0
+    b = cBest / 2.0
+    angle = np.pi / 2.0 - etheta
+    cx = xCenter[0]
+    cy = xCenter[1]
+
+    t = np.arange(0, 2 * np.pi + 0.1, 0.1)
+    x = [a * np.cos(it) for it in t]
+    y = [b * np.sin(it) for it in t]
+    R = np.array([[np.cos(angle), np.sin(angle)],
+                  [-np.sin(angle), np.cos(angle)]])
+    fx = R * np.array([x, y])
+    px = np.array(fx[0, :] + cx).flatten()
+    py = np.array(fx[1, :] + cy).flatten()
+    plt.plot(cx, cy, "xc")
+    plt.plot(px, py, "--c")
+
 def main():
     x = [5, 6, 6.4, 8.5, 10.5, 16]
-    y = [5.4, 5.4,   5.4,   5.4,    5.4, 6]
+    y = [5.4, 5.4, 5.4, 5.4, 5.4, 6]
     theta = [0.1, 0.2, 0.2, 0.2,0.1, -0.6]
+    xCenter = [1,2,3,4,5,6,7]
+    cBest = 1
+    cMin = 0.2
+    etheta = 0.01
     x_traj = 5.5
     y_traj = 5.5
     for i in range(len(x)):
 
         plot_vehicle(x[i], y[i], theta[i])
+        # plot_ellipse(xCenter, cBest, cMin, etheta)
+def main2():
+    tout = np.linspace(0,10,100)
+
+    x0 = [-4,1]
+    k = [1,1]
+    model = ode_solver.Kinematics(k)
+
+    z = model.trajectory(x0, tout)
+    x=  z[:,0]
+    y = z[:,1]
+    theta = 0.01*x
+    print(x.shape)
+    for i in range(len(x)):
+
+        plot_vehicle(x[i], y[i], theta[i])
 
 if __name__ == '__main__':
-    main()
+    main2()
