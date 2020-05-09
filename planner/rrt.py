@@ -66,7 +66,7 @@ class RRT:
         if random.randint(0,100)>self.sample_rate:
             rand_x = random.uniform(self.min_rand, self.max_rand)
             rand_y = random.uniform(self.min_rand, self.max_rand)
-            rand_theta = random.uniform(- 0.05, 0/.05)
+            rand_theta = random.uniform(- 0.05, 0.05)
             random_node = self.Node(rand_x, rand_y, rand_theta)
         else:
             random_node = self.Node(self.goal.x, self.goal.y, self.goal.theta)
