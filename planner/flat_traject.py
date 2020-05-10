@@ -11,14 +11,15 @@ class Trajectory:
             self.theta = theta
             self.path_x = []
             self.path_y = []
+            self.path_u_norm = []
             self.parent = None
 
 
-    def __init__(self, start, goal, velocity):
+    def __init__(self, start, goal, velocity,T):
         self.start = self.Node(start[0], start[1], start[2])
         self.goal = self.Node(goal[0], goal[1], goal[2])
         d, tehta = self.calc_dist_angle(self.start, self.goal)
-        self.T = float(d/velocity)
+        self.T = T#1.#float(d/velocity)
 
         self.vel = velocity
         self.y0 = [self.start.x, self.start.y]
@@ -47,11 +48,11 @@ class Trajectory:
             # return np.array([[3*t**2],[2*t],[np.ones(t.shape)],[np.zeros(t.shape)]])
                         # return np.array([[t**3],[t**2],[t],[np.ones(t.shape)]])
             new_size = t.shape[0]
-            a = np.array([3*t**2]).reshape(new_size,1)
-            b  = np.array([2*t]).reshape(new_size,1)
-            c = np.ones(t.shape).reshape(new_size,1)
-            d = np.zeros(t.shape).reshape(new_size,1)
-            return np.concatenate((a, b,c,d), axis=1)
+            a = np.array([3*t**2]).reshape(1,new_size)
+            b  = np.array([2*t]).reshape(1,new_size)
+            c = np.ones(t.shape).reshape(1,new_size)
+            d = np.zeros(t.shape).reshape(1,new_size)
+            return np.concatenate((a, b,c,d), axis=0)
 
     def d2poly3(self, t):
         if isinstance(t, float):
@@ -59,11 +60,11 @@ class Trajectory:
         else:
             return np.array([[6*t], [2], [np.zeros(t.shape)], [np.zeros(t.shape)]])
             new_size = t.shape[0]
-            a = np.array([6*t]).reshape(new_size,1)
-            b  = np.array([2]).reshape(new_size,1)
-            c = np.zeros(t.shape).reshape(new_size,1)
-            d = np.zeros(t.shape).reshape(new_size,1)
-            return np.concatenate((a, b,c,d), axis=1)
+            a = np.array([6*t]).reshape(1,new_size)
+            b  = np.array([2]).reshape(1,new_size)
+            c = np.zeros(t.shape).reshape(1,new_size)
+            d = np.zeros(t.shape).reshape(1,new_size)
+            return np.concatenate((a, b,c,d), axis=0)
 
     def poly3_coeff(self):
         Y = np.array([[self.y0[0], self.dy0[0], self.yf[0], self.dyf[0]],
@@ -74,9 +75,11 @@ class Trajectory:
         A = np.dot(Y,np.linalg.inv(L))
         # print(A)
         return A
+        
     def get_desired_traj(self):
 
         x = np.dot(self.poly3_coeff(),self.poly3(np.linspace(0.0, self.T, num= 100)))
+        dyd = np.dot(self.poly3_coeff(),self.dpoly3(np.linspace(0.0, self.T, num= 100)))
      
         self.goal.path_x.append(list(x[0,:]))
         self.goal.path_y.append(list(x[1,:]))
@@ -86,13 +89,31 @@ class Trajectory:
         self.goal.x = x[0,-1]
         self.goal.y = x[1,-1]
         # print('goal.path_x', self.goal.path_x)
+        self.get_desired_control()
+       
         return self.goal
-
-    # def plot_desired_traj(self):
-    #     x = self.get_desired_traj(self.start, self.goal)
-    #     print(x)
-    #     plt.plot(x[0,:], x[1,:], '-r')
-    #     plt.show()
+        
+    def get_desired_control(self):
+        dyd = np.dot(self.poly3_coeff(),self.dpoly3(np.linspace(0.0, self.T, num= 100)))
+        d2yd = np.dot(self.poly3_coeff(),self.d2poly3(np.linspace(0.0, self.T, num= 100)))
+        
+        u1d = np.sqrt(dyd[0,:]**2 + dyd[1,:]**2).reshape(100,)
+        u2d = ((d2yd[1,:]*dyd[0,:] - d2yd[0,:]*dyd[1,:])/u1d**3).reshape(100,) # Cannot get arctan
+        
+        u_norm = u1d**2 + u2d**2
+        self.goal.path_u_norm = u_norm
+        
+        return self.goal.path_u_norm
+    
+    def plot_desired_traj(self):
+        self.get_desired_traj()
+        x = self.goal.path_x
+        y = self.goal.path_y
+        #print(x)
+        #plt.plot(x[0,:], x[1,:], '-r')
+        #plt.show()
+        plt.plot(x,y)
+        #plt.show()
 
     def calc_dist_angle(self, start_node, end_node):
         dx = end_node.x - start_node.x
@@ -102,15 +123,15 @@ class Trajectory:
         return distance, theta  
 
 
-# def main():
-#     start = [-5,-3,0.5]
-#     goal = [0,0,1]
-#     T = 10
+def main():
+    start = [-2,-1,0.5]
+    goal = [0,0,0]
+    T = 1.
+    traj = Trajectory(start, goal, 2, T)
+    traj.get_desired_traj()
+    traj.plot_desired_traj()
 
-#     traj = Trajectory(start, goal, 1, T)
-#     traj.get_desired_traj()
 
 
-
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()

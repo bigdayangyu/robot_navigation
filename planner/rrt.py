@@ -14,7 +14,7 @@ class RRT:
             self.path_y = []
             self.parent = None
 
-    def __init__(self, start, goal, steer_angle, obstacle_list, map_boundary, sample_rate = 5, nums_iter = 500, expand_dis=1.0, linear_vel=0.01):
+    def __init__(self, start, goal, steer_angle, obstacle_list, map_boundary, sample_rate = 5, nums_iter = 500, expand_dis=1.0, linear_vel=1.5,T = 1.):
         '''
         start, goal = start/goal position
         obstacle_list = list of obstacles
@@ -31,7 +31,8 @@ class RRT:
 
         self.expand_dis = expand_dis
         self.linear_vel = linear_vel
-        self.L = 5# length of the car
+        self.T = T
+        self.L = 1.# length of the car
 
 
         self.node_list = [] # store nodes
@@ -71,14 +72,43 @@ class RRT:
         else:
             random_node = self.Node(self.goal.x, self.goal.y, self.goal.theta)
         return random_node
-
+        
+    def distance_metric(self, rand_node,node_list):
+        '''
+        Distance metric
+        '''
+        distance = []
+        w = [0.001,2.]        
+        for node in node_list:
+             
+            start = [node.x, node.y, node.theta]
+            goal = [rand_node.x, rand_node.y, rand_node.theta]
+            traj = Trajectory(start, goal, velocity = self.linear_vel,T=1.)
+            path = traj.get_desired_traj()
+            path_u = path.path_u_norm
+            path_x = np.array(path.path_x)
+            path_y = np.array(path.path_y)
+            dist_u = np.sum(path_u,axis=0)*w[0]
+            
+            dist_x = (path_x[1:100] - path_x[0:99])**2
+            dist_y = (path_y[1:100] - path_y[0:99])**2
+            dist_euclidean = np.sum(dist_x+dist_y,axis=0)*w[1]
+            #print(dist_u[0],dist_euclidean)         
+            dist = dist_u[0] + dist_euclidean
+                        
+            distance.append(dist)
+            
+        return distance
+        
     def nearest_neighbor(self, rand_node, node_list):
         '''get the index of nearest neighbor
         '''
-        distance = [(rand_node.x - node.x)**2 + (rand_node.y - node.y)**2 for node in node_list]
+        
+        distance = self.distance_metric(rand_node,node_list)#[(rand_node.x - node.x)**2 + (rand_node.y - node.y)**2 for node in node_list]
         # theta = math.atan2(rand_node.y - node.y, rand_node.x - node.x)
         min_index = distance.index(min(distance))
         return min_index
+        
 
 
     def calc_dist_angle(self, start_node, end_node):
@@ -137,9 +167,7 @@ class RRT:
         new_node = self.Node(from_node.x, from_node.y, from_node.theta)
         d, theta = self.calc_dist_angle(new_node, to_node)
 
-        if extend_length > d:
-            extend_length = d
-        traj = Trajectory(start, goal, velocity = 0.001)
+        traj = Trajectory(start, goal, velocity = self.linear_vel,T=self.T)
         new_node= traj.get_desired_traj()
         new_node.parent = from_node
 
@@ -175,7 +203,7 @@ class RRT:
         plt.plot(xl, yl, color)
 
 
-def main(gx=6.0, gy=10.0):
+def main(gx=10.0, gy=9.0):
     print("start " + __file__)
 
     # ====Search Path with RRT====
@@ -191,7 +219,7 @@ def main(gx=6.0, gy=10.0):
         (8, 10, 1)
     ]  # [x, y, radius]
     # Set Initial parameters
-    rrt = RRT(start=[0, 0],
+    rrt = RRT(start=[2, 0],
               goal=[gx, gy],
               steer_angle = 0.0,
               obstacle_list=obstacleList,
