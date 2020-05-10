@@ -83,30 +83,30 @@ class Kinematics:
         #print(z_num[:,2])
         return Xs
 
-def main():
-    start = [-5,-3,0.1]
-    goal = [0,0,1.]
-    T = 5.
-    traj = Trajectory(start, goal, .1, T)
-    traj.plot_desired_traj()
+# def main():
+#     start = [-5,-3,0.1]
+#     goal = [0,0,1.]
+#     T = 5.
+#     traj = Trajectory(start, goal, .1, T)
+#     traj.plot_desired_traj()
 
-    tout = np.linspace(0,T,10000)
-    x0 = [-5.2,-3,0.1,0.1]
-    k = [1,1]
-    model = Kinematics(k,traj)
+#     tout = np.linspace(0,T,10000)
+#     x0 = [-5.2,-3,0.1,0.1]
+#     k = [1,1]
+#     model = Kinematics(k,traj)
 
 
-    # # z_num = integrate.odeint(derivative,x0,tout)
-    # # x_num = z_num[:,0]
-    # # y_num = z_num[:,1]
-    z = model.trajectory(x0, tout)
-    x_num = z[:,0]
-    y_num = z[:,1]
-    #plt.figure()
+#     # # z_num = integrate.odeint(derivative,x0,tout)
+#     # # x_num = z_num[:,0]
+#     # # y_num = z_num[:,1]
+#     z = model.trajectory(x0, tout)
+#     x_num = z[:,0]
+#     y_num = z[:,1]
+#     #plt.figure()
 
-    plt.plot(x_num,y_num,color = 'red')
-    plt.show()
+#     plt.plot(x_num,y_num,color = 'red')
+#     plt.show()
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
 

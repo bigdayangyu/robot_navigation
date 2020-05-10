@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from flat_traject import *
 from rrt import *
 from tracking import *
+from plot_car import *
+
 
 def plot_map(obstacle_list):
         
@@ -30,12 +32,12 @@ def main(gx=6.0, gy=8.0):
         (6, 5, 1),
         (5, 5, 1),
         (3, 6, 2),
-        (3, 8, 2),
-        (3, 10, 2),
-        (7, 5, 2),
-        (9, 5, 2),
-        (10, 5, 2),
-        (8, 10, 1)
+        # (3, 8, 2),
+        # (3, 10, 2),
+        # (7, 5, 2),
+        # (9, 5, 2),
+        # (10, 5, 2),
+        # (8, 10, 1)
     ]  
     
     # ====Search Path with RRT====
@@ -71,13 +73,14 @@ def main(gx=6.0, gy=8.0):
 
             for xd,yd in zip(x_flat, y_flat):
                 plt.plot(xd, yd , '-r')
-                plt.pause(0.001)
+                plt.pause(0.00001)
 
             plt.show()
     
     # ====Trajectory Tracking====
     xs_exe = []
     ys_exe = []
+    thetas_ext = []
     for i in range(len(path)-1):
         if i==0:
             node1 = [2,0,0]
@@ -90,7 +93,7 @@ def main(gx=6.0, gy=8.0):
         traj = Trajectory(node1, node2, 1.5,1.)  #Kept the same as that in RRT  
         
         node1.append(1.5)
-        tout = np.linspace(0,1,10000)
+        tout = np.linspace(0,1,1000)
         k = [1,1]
         model = Kinematics(k,traj)
         z = model.trajectory(node1, tout)
@@ -99,11 +102,37 @@ def main(gx=6.0, gy=8.0):
         #node2.append(0.1)
         xs_exe.extend(x_num)
         ys_exe.extend(y_num)
+        thetas_ext.extend(z[:,2])
+
+    plt.subplots()
+
+    plot_car = Plot_car();
+    
+    x_new = [xs_exe[0]]
+    y_new = [xs_exe[0]]
+
+    for i in range(len(xs_exe)): 
+
+        plt.cla()
+
+
+        plot_map(obstacleList)
+        plt.plot(xs_exe, ys_exe, "-r")
+
+        plot_car.plot_vehicle(xs_exe[i], ys_exe[i], thetas_ext[i])
+  
+        plt.plot(x_new, y_new, ".")
+        if i %500:
+            x_new.append(xs_exe[i])
+            y_new.append(ys_exe[i])
+
+        plt.grid(True)
+        plt.pause(0.0000001)
     
     #print(xs_exe)
-    plt.figure()
+    # plt.figure()
     #rrt.draw_graph()
-    plot_map(obstacleList)
+    # plot_map(obstacleList)
     plt.plot(xs_exe,ys_exe,'-r')   
     plt.show()
 
