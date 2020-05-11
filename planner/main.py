@@ -29,21 +29,28 @@ def main(gx=6.0, gy=8.0):
 
     # ====Setup obstacles====
     obstacleList = [
+        (2, 5, 1),
+        (2, 4, 1),
+        (2, 3, 1),
+        (2, 2, 1),
+        (2, 4, 1),
+        (2, 3, 1),
         (6, 5, 1),
         (5, 5, 1),
-        (3, 6, 2),
-        # (3, 8, 2),
-        # (3, 10, 2),
-        # (7, 5, 2),
-        # (9, 5, 2),
-        # (10, 5, 2),
-        # (8, 10, 1)
+        (3, 6, 1),
+        (3, 8, 1),
+        (3, 5, 1),
+        (8, 10, 1),
+        (9, 10, 0.5),
+        (10, 9, 0.5),
+        (9, 9, 1),
+        (11, 5, 1),
     ]  
     
     # ====Search Path with RRT====
-    rrt = RRT(start=[2, 0],
+    rrt = RRT(start=[0, 0],
               goal=[gx, gy],
-              steer_angle = 0.0,
+              steer_angle = 1.57,
               obstacle_list=obstacleList,
               map_boundary=[-2, 15]
               )
@@ -83,7 +90,7 @@ def main(gx=6.0, gy=8.0):
     thetas_ext = []
     for i in range(len(path)-1):
         if i==0:
-            node1 = [2,0,0]
+            node1 = [0,0,1.57] # start point [0,0, 1.57]
         else:
             p = path[-i]
             node1 = [p[0].x,p[0].y,p[0].theta]
@@ -99,7 +106,7 @@ def main(gx=6.0, gy=8.0):
         z = model.trajectory(node1, tout)
         x_num = z[:,0]
         y_num = z[:,1]
-        #node2.append(0.1)
+
         xs_exe.extend(x_num)
         ys_exe.extend(y_num)
         thetas_ext.extend(z[:,2])
@@ -122,17 +129,13 @@ def main(gx=6.0, gy=8.0):
         plot_car.plot_vehicle(xs_exe[i], ys_exe[i], thetas_ext[i])
   
         plt.plot(x_new, y_new, ".")
-        if i %500:
+        if i %10 == 0:
             x_new.append(xs_exe[i])
             y_new.append(ys_exe[i])
 
         plt.grid(True)
         plt.pause(0.0000001)
     
-    #print(xs_exe)
-    # plt.figure()
-    #rrt.draw_graph()
-    # plot_map(obstacleList)
     plt.plot(xs_exe,ys_exe,'-r')   
     plt.show()
 

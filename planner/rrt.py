@@ -14,7 +14,7 @@ class RRT:
             self.path_y = []
             self.parent = None
 
-    def __init__(self, start, goal, steer_angle, obstacle_list, map_boundary, sample_rate = 5, nums_iter = 500, expand_dis=1.0, linear_vel=1.5,T = 1.):
+    def __init__(self, start, goal, steer_angle, obstacle_list, map_boundary, sample_rate = 5, nums_iter = 500, expand_dis=1.0, linear_vel=1.5,T = 1., width_clearance = 3.5/8.):
         '''
         start, goal = start/goal position
         obstacle_list = list of obstacles
@@ -33,6 +33,7 @@ class RRT:
         self.linear_vel = linear_vel
         self.T = T
         self.L = 1.# length of the car
+        self.width_clearance = width_clearance/2.0
 
 
         self.node_list = [] # store nodes
@@ -141,7 +142,7 @@ class RRT:
                 distance = dx**2 + dy**2
                 distance_list.append(distance)
 
-            if min(distance_list) <= r**2:
+            if min(distance_list) <= (r+ self.width_clearance )**2:
                 return False
         return True
 
@@ -189,6 +190,7 @@ class RRT:
 
         plt.plot(self.start.x, self.start.y, "xr")
         plt.plot(self.goal.x, self.goal.y, "xr")
+
         plt.axis("equal")
         plt.axis([-2, 15, -2, 15])
         plt.grid(True)
@@ -201,59 +203,4 @@ class RRT:
         xl = [x + size * math.cos(np.deg2rad(d)) for d in deg]
         yl = [y + size * math.sin(np.deg2rad(d)) for d in deg]
         plt.plot(xl, yl, color)
-
-
-def main(gx=10.0, gy=9.0):
-    print("start " + __file__)
-
-    # ====Search Path with RRT====
-    obstacleList = [
-        (6, 5, 1),
-        (5, 5, 1),
-        (3, 6, 2),
-        (3, 8, 2),
-        (3, 10, 2),
-        (7, 5, 2),
-        (9, 5, 2),
-        (10, 5, 2),
-        (8, 10, 1)
-    ]  # [x, y, radius]
-    # Set Initial parameters
-    rrt = RRT(start=[2, 0],
-              goal=[gx, gy],
-              steer_angle = 0.0,
-              obstacle_list=obstacleList,
-              map_boundary=[-2, 15]
-              )
-    path = rrt.plan()
-
-    if path is None:
-        print("Cannot find path")
-    else:
-        print("found path!!")
-        show_animation = True
-        # Draw final path
-
-        if show_animation:
-            x = []
-            y = []
-            for i in range(len(path)):
-                p =path[i]
-                x.append([p[0].path_x])
-                y.append([p[0].path_y])
-            
-            rrt.draw_graph()
-            x_flat =[item for sublist in x for item in sublist]
-            y_flat = [item for sublist in y for item in sublist]
-
-
-            for xd,yd in zip(x_flat, y_flat):
-                plt.plot(xd, yd , '-r')
-                plt.pause(0.001)
-
-            plt.show()
-
-
-
-if __name__ == '__main__':
-    main()
+        # plt.fill(xl, yl, color)

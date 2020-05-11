@@ -9,7 +9,7 @@ show_animation = True
 # Vehicle parameters
 SCALE = 4;
 LENGTH = 4/SCALE # [m]
-WIDTH = 3.0/SCALE  # [m]
+WIDTH = 3.5/SCALE  # [m]
 BACKTOWHEEL = 1.0/SCALE # [m]
 WHEEL_LEN = 0.3/SCALE  # [m]
 WHEEL_WIDTH = 0.2/SCALE  # [m]
@@ -71,15 +71,10 @@ class Plot_car:
         plt.plot(np.array(rl_wheel[0, :]).flatten(),
                  np.array(rl_wheel[1, :]).flatten(), truckcolor)
         plt.plot(x, y, "*")
+        plt.axis("equal")
+        # plt.axis([-2, 15, -2, 15])
+        # plt.grid(True)
 
-        # for stopping simulation with the esc key.
-        # plt.gcf().canvas.mpl_connect('key_release_event',
-        #         lambda event: [exit(0) if event.key == 'escape' else None])
-
-        # plt.xlim(-5, 5)
-        # plt.ylim(-16,4)
-
-        # plt.pause(dt)
 
     def transformation_matrix(self, x, y, theta):
         return np.array([
@@ -107,37 +102,3 @@ class Plot_car:
         py = np.array(fx[1, :] + cy).flatten()
         plt.plot(cx, cy, "xc")
         plt.plot(px, py, "--c")
-
-# def main():
-#     x = [5, 6, 6.4, 8.5, 10.5, 16]
-#     y = [5.4, 5.4, 5.4, 5.4, 5.4, 6]
-#     theta = [0.1, 0.2, 0.2, 0.2,0.1, -0.6]
-#     xCenter = [1,2,3,4,5,6,7]
-#     cBest = 1
-#     cMin = 0.2
-#     etheta = 0.01
-#     x_traj = 5.5
-#     y_traj = 5.5
-#     for i in range(len(x)):
-
-#         plot_vehicle(x[i], y[i], theta[i])
-#         # plot_ellipse(xCenter, cBest, cMin, etheta)
-# def main2():
-#     tout = np.linspace(0,10,100)
-#     plot_car = Plot_car();
-
-#     x0 = [-4,1]
-#     k = [1,1]
-#     model = ode_solver.Kinematics(k)
-
-#     z = model.trajectory(x0, tout)
-#     x=  z[:,0]
-#     y = z[:,1]
-#     theta = 0.01*x
-#     print(x.shape)
-#     for i in range(len(x)):
-
-#         plot_car.plot_vehicle(x[i], y[i], theta[i])
-
-# if __name__ == '__main__':
-#     main2()
