@@ -6,6 +6,6 @@ We implemented a simulation environment with obstacles and used RRT to find a pa
 We optimized the path generation by setting bounds of possiblesteering angles and using weighted sum of trajectory length and control effort as a more reasonable distancemetric for choosing the nearest neighbor.  As the result shown in figure2, the trajectory is more realistic forthe robot to follow. The result of the planning process is shown below: 
 <p align="center"><img src ="https://github.com/bigdayangyu/robot_navigation/blob/planandtrack/util/planning.gif" width = 60% /></p> 
 
-## Tracking via Differential Flatness 
+## Tracking via Feedback Linearizatoin 
 The figure indicates good tracking result: robot can follow the generated path quite well underrandom noise.  The red line is the target trajectory, while the orange dots indicate the actual path of therobot.  Also, the density of those orange dots can indicate the actual velocity of the robot at this location.
 <p align="center"><img src ="https://github.com/bigdayangyu/robot_navigation/blob/planandtrack/util/rrt_tracking.gif" width = 60% /></p> 
